@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login • Music Popularity Predictor</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="min-h-screen bg-gray-50">
+  <div class="min-h-screen grid grid-cols-1 md:grid-cols-2">
+    <div class="hidden md:flex items-center justify-center p-10" style="background: linear-gradient(135deg,#eef2ff,#faf5ff,#fff7ed);">
+      <div class="max-w-md text-center">
+        <h1 class="text-4xl font-extrabold text-indigo-700 mb-4">Welcome Back</h1>
+        <p class="text-gray-700">Sign in to access the Music Popularity Predictor and view your prediction history.</p>
+      </div>
+    </div>
+    <div class="flex items-center justify-center p-6">
+      <div class="w-full max-w-lg bg-white rounded-2xl shadow-lg p-8">
+        <div class="flex items-center justify-center mb-6">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-600" viewBox="0 0 24 24" fill="currentColor"><path d="M9 7h6v2H9zM9 11h6v2H9z"/><path fill-rule="evenodd" d="M4 5a3 3 0 013-3h10a3 3 0 013 3v14a3 3 0 01-3 3H7a3 3 0 01-3-3V5zm3-1a1 1 0 00-1 1v14a1 1 0 001 1h10a1 1 0 001-1V5a1 1 0 00-1-1H7z" clip-rule="evenodd"/></svg>
+          <h1 class="ml-2 text-2xl font-bold text-indigo-700">Login</h1>
+        </div>
+
+        {% if error %}
+        <div class="mb-4 text-sm text-red-600">{{ error }}</div>
+        {% endif %}
+
+        <form method="post" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="username">Username</label>
+            <input id="username" name="username" type="text" placeholder="Enter your name" class="w-full border rounded-lg p-3 focus:ring-indigo-500 focus:border-indigo-500" required />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1" for="password">Password</label>
+            <input id="password" name="password" type="password" placeholder="Enter your password" class="w-full border rounded-lg p-3 focus:ring-indigo-500 focus:border-indigo-500" required />
+          </div>
+          <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg">Continue</button>
+        </form>
+
+        <div class="mt-6 text-center text-sm text-gray-600">
+          <a class="text-indigo-600 hover:underline" href="/signup">New user? Create an account</a>
+          <span class="mx-2 text-gray-400">•</span>
+          <a class="text-indigo-600 hover:underline" href="/">Back to Home</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer class="text-center text-xs text-gray-500 py-4">© Harika Srinidhi</footer>
+</body>
+</html>

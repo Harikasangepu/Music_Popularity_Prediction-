@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>History • Music Popularity Predictor</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="min-h-screen bg-gray-100 p-6">
+  <div class="max-w-5xl mx-auto">
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-3xl font-bold text-indigo-700">Prediction History</h1>
+      <div class="space-x-3">
+        <a href="/" class="text-sm text-indigo-600 hover:underline">Home</a>
+        <a href="/logout" class="text-sm text-red-600 hover:underline">Logout</a>
+      </div>
+    </div>
+
+    {% if items and items|length > 0 %}
+    <div class="bg-white rounded-xl shadow p-4">
+      <table class="w-full text-left">
+        <thead>
+          <tr class="text-sm text-gray-500">
+            <th class="py-2">Time (UTC)</th>
+            <th class="py-2">Popularity</th>
+            <th class="py-2">Features</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y">
+          {% for it in items %}
+          <tr class="text-sm">
+            <td class="py-3 align-top whitespace-nowrap">{{ it.ts }}</td>
+            <td class="py-3 align-top font-semibold text-indigo-700">{{ it.prediction }}</td>
+            <td class="py-3 align-top">
+              <div class="grid grid-cols-2 md:grid-cols-3 gap-x-4 gap-y-1">
+                {% for k, v in it.features.items() %}
+                <div><span class="text-gray-500">{{ k }}:</span> <span class="font-medium">{{ v }}</span></div>
+                {% endfor %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl shadow p-6 text-center text-gray-600">
+      No history yet. Make a prediction on the <a class="text-indigo-600 hover:underline" href="/">home page</a>.
+    </div>
+    {% endif %}
+  </div>
+  <footer class="mt-8 text-center text-xs text-gray-500">© Harika Srinidhi</footer>
+</body>
+</html>

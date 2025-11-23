@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Popularity Predictor</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        .slider-container {
+            margin-bottom: 1rem;
+        }
+        .slider-container label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        .slider-container input[type="range"] {
+            width: 100%;
+        }
+        .slider-value {
+            display: inline-block;
+            width: 50px;
+            text-align: right;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #eef2ff 0%, #faf5ff 50%, #fff7ed 100%);
+        }
+        .card {
+            box-shadow: 0 10px 30px rgba(2, 6, 23, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.12);
+        }
+        .title-gradient {
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            background-clip: text; /* standard */
+            -webkit-background-clip: text; /* Safari/Chrome */
+            color: transparent; /* standard fallback */
+            -webkit-text-fill-color: transparent; /* Safari/Chrome */
+        }
+        .result-bar {
+            background: linear-gradient(90deg, #4f46e5, #06b6d4);
+        }
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(90deg, #4f46e5, #7c3aed);
+            transition: transform .05s ease, filter .2s ease;
+        }
+        .btn-primary:active { transform: translateY(1px); }
+        .btn-primary:disabled { filter: grayscale(20%); opacity: .8; cursor: not-allowed; }
+        .spinner {
+            width: 18px; height: 18px; border-radius: 9999px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: #fff;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Landing hero decorations */
+        .hero { position: relative; overflow: hidden; }
+        .blob {
+            position: absolute; border-radius: 9999px; filter: blur(60px); opacity: 0.5;
+            animation: float 12s ease-in-out infinite;
+        }
+        .blob-1 { width: 380px; height: 380px; left: -80px; top: -60px; background: radial-gradient(circle at 30% 30%, #818cf8, #a78bfa, transparent 60%); }
+        .blob-2 { width: 320px; height: 320px; right: -60px; bottom: -60px; background: radial-gradient(circle at 60% 60%, #f472b6, #60a5fa, transparent 60%); animation-delay: 2s; }
+        @keyframes float { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-12px) } }
+        .glass {
+            backdrop-filter: saturate(140%) blur(8px);
+            background: rgba(255,255,255,0.6);
+            box-shadow: 0 20px 40px rgba(31,41,55,0.12);
+            border: 1px solid rgba(99,102,241,0.18);
+        }
+        .cta-primary { background: linear-gradient(90deg,#4f46e5,#7c3aed); color: #fff; }
+        .cta-secondary { background: #fff; color: #4338ca; border: 1px solid rgba(99,102,241,0.25); }
+        .cta { transition: transform .06s ease, filter .2s ease, box-shadow .2s ease; box-shadow: 0 8px 20px rgba(79,70,229,0.2); }
+        .cta:hover { filter: brightness(1.05); box-shadow: 0 10px 24px rgba(79,70,229,0.28); }
+        .cta:active { transform: translateY(1px); }
+
+        /* Intro overlay */
+        .intro-overlay { position: fixed; inset: 0; background: radial-gradient(1200px 600px at 50% -10%, #0b1020, #020617 70%); display: flex; align-items: center; justify-content: center; z-index: 50; opacity: 1; transition: opacity .6s ease; }
+        .intro-hidden { opacity: 0; pointer-events: none; }
+        .intro-wrap { position: relative; width: 180px; height: 180px; display:flex; align-items:center; justify-content:center; }
+        .intro-logo { width: 120px; height: 120px; object-fit: contain; filter: drop-shadow(0 0 8px rgba(99,102,241,.55)) drop-shadow(0 0 20px rgba(99,102,241,.25)); animation: zoom 1.8s ease-out forwards; }
+        .intro-fallback svg { width: 120px; height: 120px; fill: #6366f1; filter: drop-shadow(0 0 10px rgba(99,102,241,.5)); animation: zoom 1.8s ease-out forwards; }
+        .intro-ring { position: absolute; border-radius: 9999px; border: 2px solid rgba(99,102,241,.25); inset: 8px; animation: pulse 1.9s ease-out infinite; }
+        .intro-ring.r2 { inset: -6px; border-color: rgba(59,130,246,.2); animation-delay: .2s; }
+        .intro-particles { position:absolute; inset:0; pointer-events:none; }
+        .intro-particles::before, .intro-particles::after { content:""; position:absolute; width:2px; height:2px; background: radial-gradient(circle, rgba(255,255,255,.7) 0%, transparent 70%); border-radius:9999px; box-shadow: 0 -36px 0 0 rgba(255,255,255,.35), 50px -8px 0 0 rgba(255,255,255,.28), -56px 12px 0 0 rgba(255,255,255,.25), 26px 34px 0 0 rgba(255,255,255,.22); animation: sparkle 2s linear infinite; }
+        .intro-particles::after { transform: rotate(25deg); animation-delay: .4s; }
+        .intro-sweep { position:absolute; inset:0; background: linear-gradient(120deg, transparent, rgba(255,255,255,.08), transparent); transform: translateX(-120%); animation: sweep 1.6s ease-out .2s forwards; border-radius: 24px; }
+        @keyframes zoom { 0% { transform: scale(0.9); opacity:.6 } 60% { transform: scale(1.08); opacity:1 } 100% { transform: scale(1); opacity:1 } }
+        @keyframes pulse { 0% { transform: scale(0.92); opacity:.6 } 70% { transform: scale(1.12); opacity:.12 } 100% { transform: scale(1.2); opacity:0 } }
+        @keyframes sparkle { 0% { transform: translateY(0) } 100% { transform: translateY(-26px) } }
+        @keyframes sweep { 0% { transform: translateX(-120%); } 100% { transform: translateX(120%); } }
+        @media (prefers-reduced-motion: reduce) {
+            .intro-logo, .intro-fallback svg, .intro-ring, .intro-particles, .intro-sweep { animation: none !important; }
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen p-6">
+    <!-- Intro Overlay (plays once per session) -->
+    <div id="intro" class="intro-overlay" hidden>
+        <div class="intro-wrap">
+            <div class="intro-particles"></div>
+            <div class="intro-ring"></div>
+            <div class="intro-ring r2"></div>
+            <img src="/static/logo.png" alt="Logo" class="intro-logo" onerror="this.style.display='none'; this.nextElementSibling.style.display='block'"/>
+            <div class="intro-fallback" style="display:none">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z"/></svg>
+            </div>
+        </div>
+        <!-- Optional soft chime if present (autoplay may be blocked) -->
+        <!-- <audio id="introAudio" src="/static/intro.mp3" preload="auto"></audio> -->
+    </div>
+    {% if user %}
+    <div class="max-w-4xl mx-auto bg-white rounded-2xl card p-8">
+        <!-- Top Navigation -->
+        <div class="flex items-center justify-between mb-6">
+            <a href="/" class="flex items-center gap-2 text-indigo-700 font-bold">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor"><path d="M9 7h6v2H9zM9 11h6v2H9z"/><path fill-rule="evenodd" d="M4 5a3 3 0 013-3h10a3 3 0 013 3v14a3 3 0 01-3 3H7a3 3 0 01-3-3V5zm3-1a1 1 0 00-1 1v14a1 1 0 001 1h10a1 1 0 001-1V5a1 1 0 00-1-1H7z" clip-rule="evenodd"/></svg>
+                <span>Music Popularity</span>
+            </a>
+            <div class="flex items-center gap-4 text-sm">
+                <a href="/history" class="text-indigo-600 hover:underline flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8v5h4v-2h-2V8z"/><path d="M13 3a9 9 0 109 9 9.01 9.01 0 00-9-9zm0 16a7 7 0 117-7 7 7 0 01-7 7z"/></svg>
+                    History
+                </a>
+                {% if user %}
+                <span class="text-gray-500 hidden md:inline">Hi, {{ user }}</span>
+                <a href="/logout" class="text-red-600 hover:underline flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M16 13v-2H7V8l-5 4 5 4v-3z"/><path d="M20 3H10a2 2 0 00-2 2v3h2V5h10v14H10v-3H8v3a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2z"/></svg>
+                    Logout
+                </a>
+                {% else %}
+                <a href="/signup" class="text-indigo-600 hover:underline flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12a5 5 0 100-10 5 5 0 000 10z"/><path fill-rule="evenodd" d="M2 20a8 8 0 1116 0H2z" clip-rule="evenodd"/></svg>
+                    Sign Up
+                </a>
+                <a href="/login" class="text-indigo-600 hover:underline flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M10 12a5 5 0 115-5 5 5 0 01-5 5zm0 2c-3.33 0-10 1.67-10 5v3h20v-3c0-3.33-6.67-5-10-5z"/></svg>
+                    Login
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        <h1 class="text-4xl font-extrabold text-center mb-8 title-gradient">🎵 Music Popularity Predictor</h1>
+
+        <form id="predictionForm" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Left Column -->
+                <div class="space-y-4">
+                    <div class="slider-container">
+                        <label for="danceability">Danceability: <span id="danceabilityValue" class="slider-value">0.5</span></label>
+                        <input type="range" id="danceability" name="danceability" min="0" max="1" step="0.01" value="0.5" class="slider">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="energy">Energy: <span id="energyValue" class="slider-value">0.5</span></label>
+                        <input type="range" id="energy" name="energy" min="0" max="1" step="0.01" value="0.5" class="slider">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="loudness">Loudness (dB): <span id="loudnessValue" class="slider-value">-10</span></label>
+                        <input type="range" id="loudness" name="loudness" min="-60" max="0" step="0.1" value="-10" class="slider">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="speechiness">Speechiness: <span id="speechinessValue" class="slider-value">0.03</span></label>
+                        <input type="range" id="speechiness" name="speechiness" min="0" max="1" step="0.01" value="0.03" class="slider">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="acousticness">Acousticness: <span id="acousticnessValue" class="slider-value">0.5</span></label>
+                        <input type="range" id="acousticness" name="acousticness" min="0" max="1" step="0.01" value="0.5" class="slider">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="instrumentalness">Instrumentalness: <span id="instrumentalnessValue" class="slider-value">0.0</span></label>
+                        <input type="range" id="instrumentalness" name="instrumentalness" min="0" max="1" step="0.01" value="0.0" class="slider">
+                    </div>
+                </div>
+                
+                <!-- Right Column -->
+                <div class="space-y-4">
+                    <div class="slider-container">
+                        <label for="liveness">Liveness: <span id="livenessValue" class="slider-value">0.1</span></label>
+                        <input type="range" id="liveness" name="liveness" min="0" max="1" step="0.01" value="0.1" class="slider">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="valence">Valence: <span id="valenceValue" class="slider-value">0.5</span></label>
+                        <input type="range" id="valence" name="valence" min="0" max="1" step="0.01" value="0.5" class="slider">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="tempo">Tempo (BPM): <span id="tempoValue" class="slider-value">120</span></label>
+                        <input type="range" id="tempo" name="tempo" min="40" max="200" step="1" value="120" class="slider">
+                    </div>
+                    
+                    <div class="slider-container">
+                        <label for="duration_ms">Duration (minutes): <span id="duration_msValue" class="slider-value">3.5</span></label>
+                        <input type="range" id="duration_ms" name="duration_ms" min="0.5" max="10" step="0.1" value="3.5" class="slider">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="key" class="block mb-2">Key:</label>
+                            <select id="key" name="key" class="w-full p-2 border rounded">
+                                <option value="0">C</option>
+                                <option value="1">C♯/D♭</option>
+                                <option value="2">D</option>
+                                <option value="3">D♯/E♭</option>
+                                <option value="4">E</option>
+                                <option value="5">F</option>
+                                <option value="6">F♯/G♭</option>
+                                <option value="7">G</option>
+                                <option value="8">G♯/A♭</option>
+                                <option value="9">A</option>
+                                <option value="10">A♯/B♭</option>
+                                <option value="11">B</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="mode" class="block mb-2">Mode:</label>
+                            <select id="mode" name="mode" class="w-full p-2 border rounded">
+                                <option value="1">Major</option>
+                                <option value="0">Minor</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label for="time_signature" class="block mb-2">Time Signature:</label>
+                            <select id="time_signature" name="time_signature" class="w-full p-2 border rounded">
+                                <option value="3">3/4</option>
+                                <option value="4" selected>4/4</option>
+                                <option value="5">5/4</option>
+                                <option value="6">6/4</option>
+                                <option value="7">7/4</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-center mt-8">
+                <button id="submitBtn" type="submit" class="btn-primary hover:brightness-110 text-white font-semibold py-3 px-8 rounded-xl">
+                    <span class="spinner" id="btnSpinner"></span>
+                    <span id="btnText">Predict Popularity</span>
+                </button>
+            </div>
+        </form>
+        
+        <div id="errorMessage" class="mt-4 text-red-500 text-center hidden"></div>
+
+        <!-- Prediction Result moved to bottom -->
+        <div id="predictionResult" class="hidden mt-8 p-5 bg-indigo-50 rounded-xl border border-indigo-100">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-xl font-semibold text-indigo-800">Prediction Result</h2>
+                <span id="popularityValue" class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-indigo-600 text-white font-bold text-lg">0</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-6 overflow-hidden">
+                <div id="popularityBar" class="result-bar h-6 rounded-full text-white text-center text-sm leading-6" style="width: 0%">0%</div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <section class="hero min-h-screen flex items-center justify-center px-6">
+        <span class="blob blob-1"></span>
+        <span class="blob blob-2"></span>
+        <div class="relative z-10 w-full max-w-3xl glass rounded-3xl p-10 text-center">
+            <h1 class="text-4xl md:text-5xl font-extrabold title-gradient mb-4">Music Popularity Predictor</h1>
+            <p class="text-xl md:text-2xl text-gray-800 max-w-2xl mx-auto mb-8">“Where words fail, music speaks.”</p>
+            <div class="flex items-center justify-center gap-4">
+                <a href="/signup" class="cta cta-primary px-8 py-3 rounded-xl font-semibold">Sign Up</a>
+                <a href="/login" class="cta cta-secondary px-8 py-3 rounded-xl font-semibold">Sign In</a>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <script>
+        // Intro overlay play-once-per-session
+        (function(){
+          try {
+            const intro = document.getElementById('intro');
+            const played = sessionStorage.getItem('introPlayed');
+            if (!intro) return;
+            if (!played) {
+              // Show overlay
+              intro.hidden = false;
+              // Attempt soft chime if provided
+              // const audio = document.getElementById('introAudio'); audio && audio.play().catch(()=>{});
+              // End after ~2.5s + fade
+              const total = 2600; // ms
+              setTimeout(()=>{ intro.classList.add('intro-hidden'); }, total);
+              setTimeout(()=>{ intro.remove(); sessionStorage.setItem('introPlayed','1'); }, total + 650);
+            } else {
+              intro.remove();
+            }
+          } catch (e) { /* no-op */ }
+        })();
+        // Update slider value displays
+        document.querySelectorAll('input[type="range"]').forEach(slider => {
+            const valueSpan = document.getElementById(`${slider.id}Value`);
+            
+            // Set initial value
+            if (valueSpan) {
+                if (slider.id === 'duration_ms') {
+                    valueSpan.textContent = slider.value;
+                } else if (slider.id === 'loudness') {
+                    valueSpan.textContent = slider.value;
+                } else if (slider.id === 'tempo') {
+                    valueSpan.textContent = slider.value;
+                } else {
+                    valueSpan.textContent = parseFloat(slider.value).toFixed(2);
+                }
+            }
+            
+            // Update value when slider changes
+            slider.addEventListener('input', (e) => {
+                if (!valueSpan) return;
+                if (e.target.id === 'duration_ms') {
+                    valueSpan.textContent = e.target.value;
+                } else if (e.target.id === 'loudness') {
+                    valueSpan.textContent = e.target.value;
+                } else if (e.target.id === 'tempo') {
+                    valueSpan.textContent = e.target.value;
+                } else {
+                    valueSpan.textContent = parseFloat(e.target.value).toFixed(2);
+                }
+            });
+        });
+        
+        // Handle form submission
+        document.getElementById('predictionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const formObject = {};
+            formData.forEach((value, key) => {
+                if (key === 'duration_ms') {
+                    formObject[key] = Math.round(parseFloat(value) * 60000); // minutes -> ms
+                } else if (key === 'key' || key === 'mode' || key === 'time_signature') {
+                    formObject[key] = parseInt(value, 10);
+                } else {
+                    formObject[key] = parseFloat(value);
+                }
+            });
+            console.log('Submitting payload:', formObject);
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const btnSpinner = document.getElementById('btnSpinner');
+            const btnText = document.getElementById('btnText');
+
+            // Enable loading state
+            if (submitBtn) submitBtn.disabled = true;
+            if (btnSpinner) btnSpinner.style.display = 'inline-block';
+            if (btnText) btnText.textContent = 'Predicting...';
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams(formObject).toString()
+                });
+                console.log('Response status:', response.status);
+                
+                const result = await response.json().catch(async () => {
+                    const text = await response.text();
+                    console.error('Non-JSON response:', text);
+                    throw new Error(text || 'Non-JSON response');
+                });
+                console.log('Response body:', result);
+                
+                if (response.ok) {
+                    // Show prediction result
+                    document.getElementById('predictionResult').classList.remove('hidden');
+                    const popularity = result.predicted_popularity;
+                    const percentage = Math.round(popularity);
+                    
+                    document.getElementById('popularityBar').style.width = `${percentage}%`;
+                    document.getElementById('popularityBar').textContent = `${percentage}%`;
+                    document.getElementById('popularityValue').textContent = Math.round(popularity);
+
+                    // Chart removed by request; only bar and badge are updated.
+                    
+                    // Hide error message if it was shown
+                    document.getElementById('errorMessage').classList.add('hidden');
+                } else {
+                    const msg = result && result.error ? result.error : 'Failed to get prediction';
+                    console.error('Prediction failed:', msg);
+                    const errorElement = document.getElementById('errorMessage');
+                    errorElement.textContent = `Error: ${msg}`;
+                    errorElement.classList.remove('hidden');
+                    throw new Error(msg);
+                }
+            } catch (error) {
+                // Show error message
+                const errorElement = document.getElementById('errorMessage');
+                errorElement.textContent = `Error: ${error.message}`;
+                errorElement.classList.remove('hidden');
+                console.error('Prediction error:', error);
+            } finally {
+                // Disable loading state
+                if (submitBtn) submitBtn.disabled = false;
+                if (btnSpinner) btnSpinner.style.display = 'none';
+                if (btnText) btnText.textContent = 'Predict Popularity';
+            }
+        });
+        
+        // Removed auto-predict on load to avoid storing any default prediction.
+    </script>
+    <footer class="mt-8 text-center text-xs text-gray-500">
+        © Harika Srinidhi
+    </footer>
+</body>
+</html>
